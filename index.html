@@ -1,0 +1,265 @@
+<html>
+
+<head>
+    <title>INFO 5311 HW1 </title>
+    <link href="https://fonts.googleapis.com/css?family=Lato:400,700|Raleway:400,700" rel="stylesheet">
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <script src="https://d3js.org/topojson.v3.min.js"></script>
+
+
+
+    <style>
+        .neighborhood {
+            fill: #f0f0f0;
+            stroke: white;
+            stroke-width: 2px;
+        }
+    </style>
+</head>
+
+<body>
+    <p id="that">
+        <span>
+            <h2>Homework 1</h2>
+            <h3>Author: Dong Fang(Marcus), ID: df375</h3>
+        </span>
+
+    </p>
+    <hr>
+
+    <p id="p1">
+        <b>
+            1:
+        </b>
+
+        <h4>
+            Design & Rationale:
+        </h4>
+        <p>For this homework I've created 5 different visualizations on SF's tree, as each of them are listed on the subtitles of each visualization. I've picked up main caregories like legal status, species, siteinfo and caretaker in order to tell a story from the SF trees. I've used mostly greenish colors to represent trees compared to the lightgray map background that represent the urban spaces.</p>
+        
+        <p>Although I tried to make the map seem less cluttered by reducing the opacity and radius for each circle(which represents 1 tree per circle), the overall results doesn't seem plausible as it lacks interactive aspects like zoom-in functionalities. I tried to add legends that are semi-transparent to the background in order to let the audiences know what the visualization means, but this attempte has failed as well. </p>
+
+        <h4>
+            Tradeoffs & Drawbacks:
+        </h4>
+        <p>
+           For different categories for each SF tree on the map, it's highly unlikely to add legends for each map. For example, I've only labeled 3 out of 12 major legal categories of all the trees in SF. Although most of them are green(DPW Maintained), it would be difficult to label out all the outliers from the map.
+
+        </p>
+        <p>
+This visualization has many rooms for improvements. Adding general statistical plots like barplots would be a better way to help the users understand different categories and portions for SF trees, like how many of them are private owned or resided on the curbsite. 
+
+         </p>
+        <br>
+        <hr>
+
+        <b>
+Visualization of municipal trees in San Francisco, <a href="https://data.sfgov.org/City-Infrastructure/Street-Tree-List/tkzw-k3nq">data source</a> </b>
+    </p>
+
+    <svg id="points" height="1000" width="1000" style="background: #fff; margin-top:50px"></svg>
+    
+    <hr>
+    <b>Legal Status of the trees</b>
+    <svg id="points2" height="1000" width="1000" style="background: #fff; margin-top:50px"></svg>
+   
+    <hr>
+    <b>Tree Species Distribution</b>
+    <svg id="points3" height="1000" width="1000" style="background: #fff; margin-top:50px"></svg>
+    
+    <hr>
+    <b>Location info of where the tree recides</b>
+    <svg id="points4" height="1000" width="1000" style="background: #fff; margin-top:50px"></svg>
+    
+    <hr>
+    <b>Agency or person that is primary caregiver to tree -- Owner of Tree</b>
+    <svg id="points5" height="1000" width="1000" style="background: #fff; margin-top:50px"></svg>
+
+
+
+
+
+    <script>
+        const svg = d3.select("#points");
+        const svg2 = d3.select("#points2");
+        const svg3 = d3.select("#points3");
+        const svg4 = d3.select("#points4");
+        const svg5 = d3.select("#points5");
+
+
+        const width = svg.attr("width");
+        const height = svg.attr("height");
+        const margin = {
+            top: 20,
+            right: 20,
+            bottom: 20,
+            left: 20
+        };
+
+        const mapWidth = width - margin.left - margin.right;
+        const mapHeight = height - margin.top - margin.bottom;
+        const map = svg.append("g")
+            .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+        const map2 = svg2.append("g")
+            .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+        const map3 = svg3.append("g")
+            .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+        const map4 = svg4.append("g")
+            .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+        const map5 = svg5.append("g")
+            .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+        const requestData = async function() {
+
+            const sf = await d3.json("../SF-Neighborhoods.geo.json");
+            //console.log(sf);
+
+            var neighborhoods = topojson.feature(sf, sf.objects.SFNeighborhoods);
+            var projection = d3.geoMercator().fitSize([mapWidth, mapHeight], neighborhoods);
+            var path = d3.geoPath().projection(projection);
+
+            map.selectAll("path.neighborhood").data(neighborhoods.features)
+                .join("path")
+                .attr("class", "neighborhood")
+                .attr("d", path);
+
+            map2.selectAll("path.neighborhood").data(neighborhoods.features)
+                .join("path")
+                .attr("class", "neighborhood")
+                .attr("d", path);
+
+            map3.selectAll("path.neighborhood").data(neighborhoods.features)
+                .join("path")
+                .attr("class", "neighborhood")
+                .attr("d", path);
+
+            map4.selectAll("path.neighborhood").data(neighborhoods.features)
+                .join("path")
+                .attr("class", "neighborhood")
+                .attr("d", path);
+
+            map5.selectAll("path.neighborhood").data(neighborhoods.features)
+                .join("path")
+                .attr("class", "neighborhood")
+                .attr("d", path);
+
+            const trees = await d3.csv("../Street_Tree_List-2022-01-30_FILTERED.csv");
+
+
+            trees.forEach(d => {
+                d.Position = projection([d.Longitude, d.Latitude]);
+            });
+
+            //https://github.com/d3/d3-scale-chromatic
+            //https://github.com/d3/d3-scale#ordinal-scales
+
+            //const colorScale1 = ['#d9e9f6', '#bed7ed', '#96c4db', '#62a7ce', '#3a8abb'];
+            //const colorScale1 = ['#1453ad', '#ad1453', '#96c4db', '#62a7ce', '#3a8abb'];
+            const colorScale = d3.scaleOrdinal(d3.schemeCategory10);
+            const colorScale2 = d3.scaleOrdinal(d3.schemeAccent);
+            const colorScale3 = d3.scaleOrdinal(d3.schemePaired);
+            const colorScale4 = d3.scaleOrdinal(d3.schemeDark2);
+            const colorScale5 = d3.scaleOrdinal(d3.schemeDark2);
+
+            map.selectAll("circle").data(trees)
+                .join("circle")
+                .attr("r", 1)
+                .attr("fill", "forestgreen")
+                .attr("opacity", 0.4)
+                .attr("cx", d => d.Position[0])
+                .attr("cy", d => d.Position[1]);
+
+            map2.selectAll("circle").data(trees)
+                .join("circle")
+                .attr("r", 1.2)
+                .attr("fill", d => colorScale2(d['qLegalStatus']))
+                .attr("opacity", 0.6)
+                .attr("cx", d => d.Position[0])
+                .attr("cy", d => d.Position[1]);
+
+            map3.selectAll("circle").data(trees)
+                .join("circle")
+                .attr("r", 1.2)
+                .attr("fill", d => colorScale3(d['qSpecies']))
+                .attr("opacity", 0.4)
+                .attr("cx", d => d.Position[0])
+                .attr("cy", d => d.Position[1]);
+
+
+            map4.selectAll("circle").data(trees)
+                .join("circle")
+                .attr("r", 1.2)
+                .attr("fill", d => colorScale4(d['qSiteInfo']))
+                .attr("opacity", 0.4)
+                .attr("cx", d => d.Position[0])
+                .attr("cy", d => d.Position[1]);
+
+
+            map5.selectAll("circle").data(trees)
+                .join("circle")
+                .attr("r", 1.2)
+                .attr("fill", d => colorScale5(d['qCaretaker']))
+                .attr("opacity", 0.6)
+                .attr("cx", d => d.Position[0])
+                .attr("cy", d => d.Position[1]);
+
+
+
+
+            // legends
+
+            svg2.append("rect")
+                .attr("x", 39)
+                .attr("y", 60)
+                .attr("width", 237)
+                .attr("height", 90)
+                .attr("rx", 4)
+                .attr("ry", 4)
+                .attr("opacity", 1)
+                .style("stroke", '#f3f3f3')
+                .style("stroke-width", '4px')
+                .attr("fill", "#FFF");
+
+            svg2.append("circle")
+                .attr("cx", 60)
+                .attr("cy", 80)
+                .attr("r", 6)
+                .style("fill", "#94d094");
+
+            svg2.append("circle").attr("cx", 60).attr("cy", 105)
+                .attr("r", 6).style("fill", "#f23f92");
+
+            svg2.append("circle").attr("cx", 60).attr("cy", 130)
+                .attr("r", 6).style("fill", "#c56e37");
+
+            svg2.append("text").attr("x", 80).attr("y", 81).text("DPW Maintained")
+                .style("font-size", "15px").attr("alignment-baseline", "middle");
+
+            svg2.append("text").attr("x", 80).attr("y", 106).text("Permitted Site")
+                .style("font-size", "15px").attr("alignment-baseline", "middle");
+
+            svg2.append("text").attr("x", 80).attr("y", 132).text("Planning Code 138.1 required")
+                .style("font-size", "15px").attr("alignment-baseline", "middle");
+
+
+
+        }
+        requestData();
+    </script>
+
+
+    <!--- calls the highlight library to fill the <pre> tag with code --->
+    <script>
+        function sanitize(s) {
+            return s.replace("<br>", "\\n")
+                .replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;")
+                .replace(/"/g, "&quot;")
+                .replace(/'/g, "&#039;");
+        }
+    </script>
+
+</body>
+
+</html>
