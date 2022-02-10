@@ -111,7 +111,7 @@ Visualization of municipal trees in San Francisco, <a href="https://data.sfgov.o
 
         const requestData = async function() {
 
-            const sf = await d3.json("../SF-Neighborhoods.geo.json");
+            const sf = await d3.json("./SF-Neighborhoods.geo.json");
             //console.log(sf);
 
             var neighborhoods = topojson.feature(sf, sf.objects.SFNeighborhoods);
@@ -143,7 +143,7 @@ Visualization of municipal trees in San Francisco, <a href="https://data.sfgov.o
                 .attr("class", "neighborhood")
                 .attr("d", path);
 
-            const trees = await d3.csv("../Street_Tree_List-2022-01-30_FILTERED.csv");
+            const trees = await d3.csv("./Street_Tree_List-2022-01-30_FILTERED.csv");
 
 
             trees.forEach(d => {
